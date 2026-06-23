@@ -1,0 +1,31 @@
+import pandas as pd
+
+def find_s_algorithm(data):
+    # Filter for positive instances to find the first positive example for initialization
+    positive_instances = data[data.iloc[:, -1] == 'Yes']
+    
+    if positive_instances.empty:
+        return "No positive instances found."
+    
+    # Initialize the hypothesis with the first positive instance (excluding the target column)
+    hypothesis = positive_instances.iloc[0, :-1].values.tolist()
+    
+    # Iterate through all the instances in the dataset
+    for index, row in data.iterrows():
+        if row.iloc[-1] == 'Yes': # Check if it's a positive instance
+            for i in range(len(hypothesis)):
+                if hypothesis[i] != row.iloc[i]:
+                    hypothesis[i] = '?' # Generalize the attribute
+                    
+    return hypothesis
+
+# Load the training data from a CSV file
+try:
+    training_data = pd.read_csv('training_data.csv')
+except FileNotFoundError:
+    print("Error: training_data.csv not found.")
+    exit()
+
+# Run the Find-S algorithm
+result_hypothesis = find_s_algorithm(training_data)
+print("The most specific hypothesis is:", result_hypothesis)
