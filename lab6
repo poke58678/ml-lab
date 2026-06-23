@@ -1,0 +1,57 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def kernel(x, point, tau):
+    """
+    Calculates the kernel weight for a given point and input x.
+    Args:
+        x: The input data point.
+        point: The point for which the kernel weight is calculated.
+        tau: The bandwidth parameter.
+    Returns:
+        The kernel weight.
+    """
+    return np.exp(-((x - point) ** 2) / (2 * tau ** 2))
+
+def locally_weighted_regression(x, X, Y, tau):
+    """
+    Performs locally weighted regression.
+    Args:
+        x: The input point for which to predict the output.
+        X: The training data input features.
+        Y: The training data output values.
+        tau: The bandwidth parameter.
+    Returns:
+        The predicted output value for x.
+    """
+    # Calculate weights using the first column of X (the feature)
+    weights = kernel(X[:, 0], x[0], tau)
+    W = np.diag(weights)
+    
+    # Calculate the localized beta parameters using pseudoinverse
+    beta = np.linalg.pinv(X.T @ W @ X) @ X.T @ W @ Y
+    return x @ beta
+
+# Generate synthetic data
+X = np.linspace(-3, 3, 50)
+Y = np.sin(X) + np.random.randn(50) * 0.2  # Adjusted noise multiplier to match layout cleanly
+X = X.reshape(-1, 1)
+
+# Add a bias term to the features matrix
+X = np.concatenate((X, np.ones((50, 1))), axis=1)
+
+# Choose a bandwidth parameter
+tau = 0.5
+
+# Perform locally weighted regression and plot the results
+# Iterate over each row of X to predict values
+Y_pred = [locally_weighted_regression(x, X, Y, tau) for x in X]
+
+# Visualization and Plotting
+plt.scatter(X[:, 0], Y, label='Data')
+plt.plot(X[:, 0], Y_pred, color='red', label='Locally Weighted Regression')
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.title('Locally Weighted Regression')
+plt.legend()
+plt.show()
